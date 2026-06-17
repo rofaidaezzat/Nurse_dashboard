@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { X, FileText, Calendar, ShieldCheck, CreditCard, AlertTriangle } from 'lucide-react';
+import { X, FileText, Calendar, ShieldCheck, CreditCard, AlertTriangle, FileUp } from 'lucide-react';
 import NurseForm from './NurseForm';
-import { Nurse } from '../types';
+import { Nurse, StaffRole } from '../types';
 
 interface ModalWrapperProps {
   isOpen: boolean;
@@ -83,8 +83,43 @@ interface ViewModalProps {
 export function ViewModal({ isOpen, onClose, nurse }: ViewModalProps) {
   if (!nurse) return null;
 
+  const isAssistant = nurse.role === 'assistant_nurse';
+
+  const getRoleLabel = (role: StaffRole) => {
+    switch (role) {
+      case 'registered_nurse': return 'Registered Nurse';
+      case 'assistant_nurse': return 'Assistant Nurse';
+      case 'general_dr': return 'General Dr';
+      default: return 'Staff Member';
+    }
+  };
+
+  const getRoleBadgeStyle = (role: StaffRole) => {
+    switch (role) {
+      case 'registered_nurse': return 'bg-sky-50 text-sky-600 border-sky-100';
+      case 'assistant_nurse': return 'bg-teal-50 text-teal-600 border-teal-100';
+      case 'general_dr': return 'bg-indigo-50 text-indigo-600 border-indigo-100';
+      default: return 'bg-gray-50 text-gray-600 border-gray-100';
+    }
+  };
+
+  // Helper to render document item row
+  const renderDocItem = (label: string, fileName?: string) => {
+    return (
+      <div className="flex items-center gap-3 p-3 bg-white border border-gray-150 rounded-xl">
+        <div className="p-2 bg-sky-50 text-sky-500 rounded-lg">
+          <FileText className="w-4 h-4" />
+        </div>
+        <div className="flex-grow min-w-0">
+          <p className="text-xs font-semibold text-gray-800">{label}</p>
+          <p className="text-[10px] text-gray-400 truncate">{fileName || 'Not Uploaded'}</p>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Nurse Profile Details" maxWidthClass="max-w-lg md:max-w-3xl">
+    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Staff Profile Details" maxWidthClass="max-w-lg md:max-w-3xl">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
         
         {/* Left Column: Avatar & Name */}
@@ -104,8 +139,8 @@ export function ViewModal({ isOpen, onClose, nurse }: ViewModalProps) {
           </div>
           <div className="space-y-1.5 w-full">
             <h2 className="text-xl font-bold text-gray-900 leading-tight">{nurse.name}</h2>
-            <span className="inline-block px-3 py-1 rounded-full bg-sky-50 text-xs font-semibold text-sky-600 border border-sky-100">
-              Registered Staff
+            <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border ${getRoleBadgeStyle(nurse.role)}`}>
+              {getRoleLabel(nurse.role)}
             </span>
           </div>
         </div>
@@ -114,14 +149,7 @@ export function ViewModal({ isOpen, onClose, nurse }: ViewModalProps) {
         <div className="col-span-1 md:col-span-2 space-y-6">
           {/* Info Grid */}
           <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-150 grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-sky-500" />
-                DHA License
-              </span>
-              <p className="text-sm font-semibold text-gray-800 font-mono">{nurse.dhaNumber}</p>
-            </div>
-
+            {/* Age */}
             <div className="space-y-1">
               <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-sky-500" />
@@ -130,51 +158,46 @@ export function ViewModal({ isOpen, onClose, nurse }: ViewModalProps) {
               <p className="text-sm font-semibold text-gray-800">{nurse.age} years old</p>
             </div>
 
-            <div className="space-y-1 col-span-2">
-              <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider flex items-center gap-1.5">
-                <CreditCard className="w-3.5 h-3.5 text-sky-500" />
-                National ID
-              </span>
-              <p className="text-sm font-semibold text-gray-800 font-mono">{nurse.nationalId}</p>
-            </div>
+            {/* Copy ID (Registered Nurse & General Dr only) */}
+            {!isAssistant && (
+              <div className="space-y-1">
+                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider flex items-center gap-1.5">
+                  <CreditCard className="w-3.5 h-3.5 text-sky-500" />
+                  Copy ID
+                </span>
+                <p className="text-sm font-semibold text-gray-800 font-mono">{nurse.copyId || 'N/A'}</p>
+              </div>
+            )}
           </div>
 
           {/* Certifications Block */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-1.5">Uploaded Certifications</h4>
-            <div className="space-y-2">
-              {/* DHA Cert */}
-              <div className="flex items-center gap-3 p-3 bg-white border border-gray-150 rounded-xl">
-                <div className="p-2 bg-sky-50 text-sky-500 rounded-lg">
-                  <FileText className="w-4 h-4" />
-                </div>
-                <div className="flex-grow min-w-0">
-                  <p className="text-xs font-semibold text-gray-800">DHA Certification</p>
-                  <p className="text-[10px] text-gray-400 truncate">{nurse.dhaCertName}</p>
-                </div>
-              </div>
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-1.5">Required Documents</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              
+              {/* Copy of Passport */}
+              {renderDocItem('Copy of Passport', nurse.passportCertName)}
 
-              {/* PLS Cert */}
-              <div className="flex items-center gap-3 p-3 bg-white border border-gray-150 rounded-xl">
-                <div className="p-2 bg-sky-50 text-sky-500 rounded-lg">
-                  <FileText className="w-4 h-4" />
-                </div>
-                <div className="flex-grow min-w-0">
-                  <p className="text-xs font-semibold text-gray-800">PLS Certification</p>
-                  <p className="text-[10px] text-gray-400 truncate">{nurse.plsCertName}</p>
-                </div>
-              </div>
+              {/* Copy of Emirates ID */}
+              {renderDocItem('Copy of Emirates ID', nurse.emiratesIdCertName || nurse.dhaCertName)}
 
-              {/* Other Cert */}
-              <div className="flex items-center gap-3 p-3 bg-white border border-gray-150 rounded-xl">
-                <div className="p-2 bg-sky-50 text-sky-500 rounded-lg">
-                  <FileText className="w-4 h-4" />
-                </div>
-                <div className="flex-grow min-w-0">
-                  <p className="text-xs font-semibold text-gray-800">Other Certification</p>
-                  <p className="text-[10px] text-gray-400 truncate">{nurse.otherCertName || 'Not Provided'}</p>
-                </div>
-              </div>
+              {/* BLS Cert (legacy fallback to plsCertName) */}
+              {renderDocItem('BLS Certificate', nurse.blsCertName || nurse.plsCertName)}
+
+              {/* Vaccination Records */}
+              {renderDocItem('Vaccination Record', nurse.vaccinationCertName)}
+
+              {/* Conditional: ACLS & Infection Control */}
+              {!isAssistant && (
+                <>
+                  {/* ACLS Cert (legacy fallback to otherCertName) */}
+                  {renderDocItem('ACLS Certificate', nurse.aclsCertName || nurse.otherCertName)}
+                  
+                  {/* Infection Control Cert */}
+                  {renderDocItem('Infection Control Cert', nurse.infectionControlCertName)}
+                </>
+              )}
+
             </div>
           </div>
 
@@ -208,9 +231,10 @@ export function EditModal({ isOpen, onClose, nurse, onSave }: EditModalProps) {
   if (!nurse) return null;
 
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Edit Nurse Profile" maxWidthClass="max-w-lg md:max-w-2xl lg:max-w-3xl">
+    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Edit Profile Details" maxWidthClass="max-w-lg md:max-w-2xl lg:max-w-3xl">
       <NurseForm 
         initialData={nurse} 
+        role={nurse.role}
         onSave={onSave} 
         onCancel={onClose} 
         submitButtonLabel="Save Changes" 
@@ -245,7 +269,7 @@ export function DeleteModal({ isOpen, onClose, nurse, onDeleteConfirm }: DeleteM
         <div className="space-y-2">
           <h3 className="text-lg font-bold text-gray-800">Are you sure you want to delete {nurse.name}?</h3>
           <p className="text-sm text-gray-500 leading-relaxed px-4">
-            This action will permanently erase the nurse's credentials, files, and profile details from the system directory. This action cannot be reversed.
+            This action will permanently erase the staff member's credentials, files, and profile details from the system directory. This action cannot be reversed.
           </p>
         </div>
 
@@ -273,6 +297,7 @@ export function DeleteModal({ isOpen, onClose, nurse, onDeleteConfirm }: DeleteM
 
 interface AddModalProps {
   isOpen: boolean;
+  role: StaffRole;
   onClose: () => void;
   onSave: (newNurse: Omit<Nurse, 'id' | 'createdAt'>) => void;
 }
@@ -280,13 +305,23 @@ interface AddModalProps {
 /**
  * 4. ADD NURSE MODAL
  */
-export function AddModal({ isOpen, onClose, onSave }: AddModalProps) {
+export function AddModal({ isOpen, role, onClose, onSave }: AddModalProps) {
+  const getModalTitle = (activeRole: StaffRole) => {
+    switch (activeRole) {
+      case 'registered_nurse': return 'Add New Registered Nurse Profile';
+      case 'assistant_nurse': return 'Add New Assistant Nurse Profile';
+      case 'general_dr': return 'Add New General Dr Profile';
+      default: return 'Add New Staff Profile';
+    }
+  };
+
   return (
-    <ModalWrapper isOpen={isOpen} onClose={onClose} title="Add New Nurse Profile" maxWidthClass="max-w-lg md:max-w-2xl lg:max-w-3xl">
+    <ModalWrapper isOpen={isOpen} onClose={onClose} title={getModalTitle(role)} maxWidthClass="max-w-lg md:max-w-2xl lg:max-w-3xl">
       <NurseForm 
+        role={role}
         onSave={onSave} 
         onCancel={onClose} 
-        submitButtonLabel="Add Nurse" 
+        submitButtonLabel={`Add ${role === 'general_dr' ? 'Doctor' : role === 'assistant_nurse' ? 'Assistant Nurse' : 'Registered Nurse'}`} 
       />
     </ModalWrapper>
   );

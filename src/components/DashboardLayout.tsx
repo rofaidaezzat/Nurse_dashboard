@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import logoImage from '../assets/photo_2026-06-17_08-23-26.jpg';
-import { LayoutDashboard, Users, LogOut, Menu, X, LucideIcon } from 'lucide-react';
+import { LayoutDashboard, Users, UserCheck, Stethoscope, LogOut, Menu, X, LucideIcon } from 'lucide-react';
 import { User } from '../types';
 
 interface DashboardLayoutProps {
@@ -22,7 +22,9 @@ export default function DashboardLayout({ user, currentPage, setCurrentPage, onL
 
   const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'nurses', label: 'Nurses', icon: Users },
+    { id: 'registered_nurse', label: 'Registered Nurse', icon: Users },
+    { id: 'assistant_nurse', label: 'Assistant Nurse', icon: UserCheck },
+    { id: 'general_dr', label: 'General Dr', icon: Stethoscope },
   ];
 
   return (
@@ -41,7 +43,7 @@ export default function DashboardLayout({ user, currentPage, setCurrentPage, onL
           
           <div className="flex items-center gap-2.5">
             <img src={logoImage} alt="Clinic Logo" className="w-7 h-7 object-contain rounded-lg" />
-            <span className="font-bold text-lg text-gray-900 tracking-tight">Nurse Dashboard</span>
+            <span className="font-bold text-lg text-gray-900 tracking-tight">Staff Dashboard</span>
           </div>
         </div>
 

@@ -1,15 +1,29 @@
+export type StaffRole = 'assistant_nurse' | 'registered_nurse' | 'general_dr';
+
 export interface Nurse {
   id: string;
+  role: StaffRole;
   name: string;
-  dhaNumber: string;
   age: number;
-  nationalId: string;
   profileImageBase64: string;
   profileImageName: string;
-  dhaCertName: string;
-  plsCertName: string;
-  otherCertName: string;
   createdAt: string;
+  dhaNumber?: string;
+  nationalId?: string;
+  copyId?: string;
+  
+  // Custom document fields based on roles
+  aclsCertName?: string;
+  blsCertName?: string;
+  vaccinationCertName?: string;
+  infectionControlCertName?: string;
+  passportCertName?: string;
+  emiratesIdCertName?: string;
+  
+  // Backward compatibility with legacy fields
+  dhaCertName?: string;
+  plsCertName?: string;
+  otherCertName?: string;
 }
 
 export interface Toast {
