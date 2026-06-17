@@ -182,6 +182,7 @@ const DEFAULT_NURSES: Nurse[] = [
     role: 'assistant_nurse',
     name: 'Linh Nguyen',
     age: 27,
+    copyId: '784-1999-1122334-0',
     profileImageBase64: nurseAvatar4,
     profileImageName: 'linh_nguyen.png',
     blsCertName: 'BLS_Linh_Nguyen.pdf',
@@ -195,6 +196,7 @@ const DEFAULT_NURSES: Nurse[] = [
     role: 'assistant_nurse',
     name: 'Reem Al-Dhaheri',
     age: 23,
+    copyId: '784-2003-9988776-0',
     profileImageBase64: nurseAvatar1,
     profileImageName: 'reem_aldhaheri.png',
     blsCertName: 'BLS_Reem_AlDhaheri.pdf',
@@ -208,6 +210,7 @@ const DEFAULT_NURSES: Nurse[] = [
     role: 'assistant_nurse',
     name: 'Joy Martinez',
     age: 25,
+    copyId: '784-2001-5544332-0',
     profileImageBase64: nurseAvatar3,
     profileImageName: 'joy_martinez.png',
     blsCertName: 'BLS_Joy_Martinez.pdf',
@@ -221,6 +224,7 @@ const DEFAULT_NURSES: Nurse[] = [
     role: 'assistant_nurse',
     name: 'Mariam Al-Kaabi',
     age: 22,
+    copyId: '784-2004-1234567-0',
     profileImageBase64: nurseAvatar2,
     profileImageName: 'mariam_alkaabi.png',
     blsCertName: 'BLS_Mariam_AlKaabi.pdf',
@@ -234,6 +238,7 @@ const DEFAULT_NURSES: Nurse[] = [
     role: 'assistant_nurse',
     name: 'Aisha Yusuf',
     age: 24,
+    copyId: '784-2002-7788990-0',
     profileImageBase64: nurseAvatar4,
     profileImageName: 'aisha_yusuf.png',
     blsCertName: 'BLS_Aisha_Yusuf.pdf',
@@ -266,7 +271,7 @@ export default function App() {
   const [page, setPage] = useState('dashboard');
   
   const [nurses, setNurses] = useState<Nurse[]>(() => {
-    const stored = localStorage.getItem('nurse_dashboard_nurses_v3');
+    const stored = localStorage.getItem('nurse_dashboard_nurses_v4');
     if (stored) {
       const parsed = JSON.parse(stored);
       if (parsed.length > 0) return parsed;
@@ -285,7 +290,7 @@ export default function App() {
 
   // Sync nurses database with LocalStorage
   useEffect(() => {
-    localStorage.setItem('nurse_dashboard_nurses_v3', JSON.stringify(nurses));
+    localStorage.setItem('nurse_dashboard_nurses_v4', JSON.stringify(nurses));
   }, [nurses]);
 
   // Toast controls

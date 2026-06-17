@@ -169,8 +169,9 @@ export default function NurseForm({
     // Role-specific validation
     const isAssistant = activeRole === 'assistant_nurse';
 
+    if (!copyId.trim()) newErrors.copyId = 'Copy ID is required';
+
     if (!isAssistant) {
-      if (!copyId.trim()) newErrors.copyId = 'Copy ID is required';
       if (!aclsCertName) newErrors.aclsCert = 'ACLS Certification is required';
       if (!infectionControlCertName) newErrors.infectionControlCert = 'Infection Control Certificate is required';
     }
@@ -195,7 +196,7 @@ export default function NurseForm({
       role: activeRole,
       name: name.trim(),
       age: parseInt(age, 10),
-      copyId: isAssistant ? '' : copyId.trim(),
+      copyId: copyId.trim(),
       profileImageBase64,
       profileImageName,
       dhaNumber: '',
@@ -263,28 +264,26 @@ export default function NurseForm({
           {errors.age && <p className="text-xs text-rose-600 mt-1 font-medium">{errors.age}</p>}
         </div>
 
-        {/* Copy ID (Registered Nurse & General Dr only) */}
-        {!isAssistant && (
-          <div className="space-y-1">
-            <label htmlFor="copyId" className="block text-sm font-semibold text-gray-700">
-              Copy ID <span className="text-rose-500">*</span>
-            </label>
-            <input
-              id="copyId"
-              type="text"
-              value={copyId}
-              onChange={(e) => {
-                setCopyId(e.target.value);
-                if (errors.copyId) setErrors(prev => ({ ...prev, copyId: null }));
-              }}
-              placeholder="e.g. 784-1990-1234567-1"
-              className={`block w-full px-4 py-2.5 rounded-xl border ${
-                errors.copyId ? 'border-rose-300 focus:ring-rose-500 focus:border-rose-500' : 'border-gray-200 focus:ring-sky-500 focus:border-sky-500'
-              } text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all text-sm`}
-            />
-            {errors.copyId && <p className="text-xs text-rose-600 mt-1 font-medium">{errors.copyId}</p>}
-          </div>
-        )}
+        {/* Copy ID (All roles now) */}
+        <div className="space-y-1">
+          <label htmlFor="copyId" className="block text-sm font-semibold text-gray-700">
+            Copy ID <span className="text-rose-500">*</span>
+          </label>
+          <input
+            id="copyId"
+            type="text"
+            value={copyId}
+            onChange={(e) => {
+              setCopyId(e.target.value);
+              if (errors.copyId) setErrors(prev => ({ ...prev, copyId: null }));
+            }}
+            placeholder="e.g. 784-1990-1234567-1"
+            className={`block w-full px-4 py-2.5 rounded-xl border ${
+              errors.copyId ? 'border-rose-300 focus:ring-rose-500 focus:border-rose-500' : 'border-gray-200 focus:ring-sky-500 focus:border-sky-500'
+            } text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all text-sm`}
+          />
+          {errors.copyId && <p className="text-xs text-rose-600 mt-1 font-medium">{errors.copyId}</p>}
+        </div>
 
       </div>
 

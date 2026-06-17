@@ -158,16 +158,14 @@ export function ViewModal({ isOpen, onClose, nurse }: ViewModalProps) {
               <p className="text-sm font-semibold text-gray-800">{nurse.age} years old</p>
             </div>
 
-            {/* Copy ID (Registered Nurse & General Dr only) */}
-            {!isAssistant && (
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider flex items-center gap-1.5">
-                  <CreditCard className="w-3.5 h-3.5 text-sky-500" />
-                  Copy ID
-                </span>
-                <p className="text-sm font-semibold text-gray-800 font-mono">{nurse.copyId || 'N/A'}</p>
-              </div>
-            )}
+            {/* Copy ID */}
+            <div className="space-y-1">
+              <span className="text-[10px] uppercase font-bold text-gray-400 tracking-wider flex items-center gap-1.5">
+                <CreditCard className="w-3.5 h-3.5 text-sky-500" />
+                Copy ID
+              </span>
+              <p className="text-sm font-semibold text-gray-800 font-mono">{nurse.copyId || 'N/A'}</p>
+            </div>
           </div>
 
           {/* Certifications Block */}
