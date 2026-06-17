@@ -5,12 +5,13 @@ import DashboardHome from './components/DashboardHome';
 import NursesTable from './components/NursesTable';
 import ToastContainer from './components/Toast';
 import { ViewModal, EditModal, DeleteModal, AddModal } from './components/Modals';
+import { User, Nurse, Toast } from './types';
 import nurseAvatar1 from './assets/nurse_avatar_1.png';
 import nurseAvatar2 from './assets/nurse_avatar_2.png';
 import nurseAvatar3 from './assets/nurse_avatar_3.png';
 import nurseAvatar4 from './assets/nurse_avatar_4.png';
 
-const DEFAULT_NURSES = [
+const DEFAULT_NURSES: Nurse[] = [
   {
     id: 'nurse-default-1',
     name: 'Sarah Jenkins',
@@ -79,14 +80,14 @@ const generateUUID = () => {
 
 export default function App() {
   // Global States
-  const [auth, setAuth] = useState(() => {
+  const [auth, setAuth] = useState<User | null>(() => {
     const stored = localStorage.getItem('nurse_dashboard_auth');
     return stored ? JSON.parse(stored) : null;
   });
 
   const [page, setPage] = useState('dashboard');
   
-  const [nurses, setNurses] = useState(() => {
+  const [nurses, setNurses] = useState<Nurse[]>(() => {
     const stored = localStorage.getItem('nurse_dashboard_nurses_v2');
     if (stored) {
       const parsed = JSON.parse(stored);
@@ -95,12 +96,12 @@ export default function App() {
     return DEFAULT_NURSES;
   });
 
-  const [toasts, setToasts] = useState([]);
+  const [toasts, setToasts] = useState<Toast[]>([]);
   
   // Modals focus targets
-  const [viewingNurse, setViewingNurse] = useState(null);
-  const [editingNurse, setEditingNurse] = useState(null);
-  const [deletingNurse, setDeletingNurse] = useState(null);
+  const [viewingNurse, setViewingNurse] = useState<Nurse | null>(null);
+  const [editingNurse, setEditingNurse] = useState<Nurse | null>(null);
+  const [deletingNurse, setDeletingNurse] = useState<Nurse | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Sync nurses database with LocalStorage
@@ -109,17 +110,21 @@ export default function App() {
   }, [nurses]);
 
   // Toast controls
-  const addToast = (message, type = 'success', description = '') => {
+  const addToast = (
+    message: string, 
+    type: 'success' | 'error' | 'info' | 'warning' = 'success', 
+    description = ''
+  ) => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { id, message, type, description }]);
   };
 
-  const removeToast = (id) => {
+  const removeToast = (id: string) => {
     setToasts((prev) => prev.filter(t => t.id !== id));
   };
 
   // Auth Operations
-  const handleLogin = (userData) => {
+  const handleLogin = (userData: User) => {
     localStorage.setItem('nurse_dashboard_auth', JSON.stringify(userData));
     setAuth(userData);
     addToast('Welcome back!', 'success', `Signed in as ${userData.email}`);
@@ -133,8 +138,8 @@ export default function App() {
   };
 
   // CRUD Operations
-  const handleAddNurse = (newNurseData) => {
-    const newNurse = {
+  const handleAddNurse = (newNurseData: Omit<Nurse, 'id' | 'createdAt'>) => {
+    const newNurse: Nurse = {
       id: generateUUID(),
       ...newNurseData,
       createdAt: new Date().toISOString()
@@ -146,7 +151,8 @@ export default function App() {
     addToast('Nurse saved!', 'success', `${newNurseData.name} has been added to the registry.`);
   };
 
-  const handleEditNurse = (updatedNurseData) => {
+  const handleEditNurse = (updatedNurseData: Omit<Nurse, 'id' | 'createdAt'>) => {
+    if (!editingNurse) return;
     setNurses((prev) => prev.map(n => n.id === editingNurse.id ? { ...n, ...updatedNurseData } : n));
     setEditingNurse(null); // Close modal
     addToast('Nurse saved!', 'success', `Profile details for ${updatedNurseData.name} updated.`);

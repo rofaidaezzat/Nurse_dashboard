@@ -1,7 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Upload, X, FileText, Image as ImageIcon, RotateCcw, Save } from 'lucide-react';
+import { Nurse } from '../types';
 
-export default function NurseForm({ initialData = null, onSave, onCancel = null, submitButtonLabel = "Save Nurse" }) {
+interface NurseFormProps {
+  initialData?: Nurse | null;
+  onSave: (record: Omit<Nurse, 'id' | 'createdAt'>) => void;
+  onCancel?: (() => void) | null;
+  submitButtonLabel?: string;
+}
+
+interface FormErrors {
+  name?: string | null;
+  dhaNumber?: string | null;
+  age?: string | null;
+  nationalId?: string | null;
+  profileImage?: string | null;
+  dhaCert?: string | null;
+  plsCert?: string | null;
+  otherCert?: string | null;
+}
+
+export default function NurseForm({ 
+  initialData = null, 
+  onSave, 
+  onCancel = null, 
+  submitButtonLabel = "Save Nurse" 
+}: NurseFormProps) {
   const [name, setName] = useState('');
   const [dhaNumber, setDhaNumber] = useState('');
   const [age, setAge] = useState('');
@@ -15,20 +39,20 @@ export default function NurseForm({ initialData = null, onSave, onCancel = null,
   const [otherCertName, setOtherCertName] = useState('');
   
   // Validation errors
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
 
   // File input refs for clearing
-  const profileInputRef = useRef(null);
-  const dhaInputRef = useRef(null);
-  const plsInputRef = useRef(null);
-  const otherInputRef = useRef(null);
+  const profileInputRef = useRef<HTMLInputElement>(null);
+  const dhaInputRef = useRef<HTMLInputElement>(null);
+  const plsInputRef = useRef<HTMLInputElement>(null);
+  const otherInputRef = useRef<HTMLInputElement>(null);
 
   // Load initial data for editing mode
   useEffect(() => {
     if (initialData) {
       setName(initialData.name || '');
       setDhaNumber(initialData.dhaNumber || '');
-      setAge(initialData.age || '');
+      setAge(String(initialData.age) || '');
       setNationalId(initialData.nationalId || '');
       setProfileImageBase64(initialData.profileImageBase64 || '');
       setProfileImageName(initialData.profileImageName || 'Current Profile Photo');
@@ -39,8 +63,8 @@ export default function NurseForm({ initialData = null, onSave, onCancel = null,
   }, [initialData]);
 
   // Read profile image to base64
-  const handleProfileImageChange = (e) => {
-    const file = e.target.files[0];
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
         setErrors(prev => ({ ...prev, profileImage: 'Please upload an image file (PNG, JPG, etc.)' }));
@@ -49,7 +73,7 @@ export default function NurseForm({ initialData = null, onSave, onCancel = null,
       
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfileImageBase64(reader.result);
+        setProfileImageBase64(reader.result as string);
         setProfileImageName(file.name);
         setErrors(prev => ({ ...prev, profileImage: null }));
       };
@@ -57,8 +81,12 @@ export default function NurseForm({ initialData = null, onSave, onCancel = null,
     }
   };
 
-  const handleFileChange = (e, setFileName, fieldKey) => {
-    const file = e.target.files[0];
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>, 
+    setFileName: (name: string) => void, 
+    fieldKey: keyof FormErrors
+  ) => {
+    const file = e.target.files?.[0];
     if (file) {
       setFileName(file.name);
       setErrors(prev => ({ ...prev, [fieldKey]: null }));
@@ -70,7 +98,7 @@ export default function NurseForm({ initialData = null, onSave, onCancel = null,
       // Revert to initialData if editing
       setName(initialData.name || '');
       setDhaNumber(initialData.dhaNumber || '');
-      setAge(initialData.age || '');
+      setAge(String(initialData.age) || '');
       setNationalId(initialData.nationalId || '');
       setProfileImageBase64(initialData.profileImageBase64 || '');
       setProfileImageName(initialData.profileImageName || 'Current Profile Photo');
@@ -80,7 +108,6 @@ export default function NurseForm({ initialData = null, onSave, onCancel = null,
     } else {
       // Clear all fields if adding
       setName('');
-      dhaNumber && setDhaNumber('');
       setDhaNumber('');
       setAge('');
       setNationalId('');
@@ -101,7 +128,7 @@ export default function NurseForm({ initialData = null, onSave, onCancel = null,
   };
 
   const validate = () => {
-    const newErrors = {};
+    const newErrors: FormErrors = {};
 
     if (!name.trim()) newErrors.name = 'Full name is required';
     else if (name.trim().length < 3) newErrors.name = 'Full name must be at least 3 characters';
@@ -130,7 +157,7 @@ export default function NurseForm({ initialData = null, onSave, onCancel = null,
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 

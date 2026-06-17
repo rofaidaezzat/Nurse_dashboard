@@ -30,3 +30,32 @@
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Global Brand Color overrides for #0093D3 */
+.bg-sky-500 {
+  background-color: #0093D3 !important;
+}
+.hover\:bg-sky-600:hover {
+  background-color: #007CBE !important;
+}
+.text-sky-500 {
+  color: #0093D3 !important;
+}
+.text-sky-600 {
+  color: #007CBE !important;
+}
+.text-sky-700 {
+  color: #00659B !important;
+}
+.border-sky-500 {
+  border-color: #0093D3 !important;
+}
+.focus\:ring-sky-500:focus {
+  --tw-ring-color: #0093D3 !important;
+}
+.bg-sky-50 {
+  background-color: #E6F4FA !important;
+}
+.border-sky-100 {
+  border-color: #CCE9F5 !important;
+}

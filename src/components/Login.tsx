@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
-import Logo from './Logo';
+import logoImage from '../assets/photo_2026-06-17_08-23-26.jpg';
+import { User } from '../types';
 
-export default function Login({ onLoginSuccess }) {
+interface LoginProps {
+  onLoginSuccess: (user: User) => void;
+}
+
+interface FormErrors {
+  email?: string | null;
+  password?: string | null;
+  form?: string | null;
+}
+
+export default function Login({ onLoginSuccess }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validate = () => {
-    const newErrors = {};
+    const newErrors: FormErrors = {};
     if (!email) {
       newErrors.email = 'Email address is required';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
@@ -25,7 +36,7 @@ export default function Login({ onLoginSuccess }) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -53,7 +64,7 @@ export default function Login({ onLoginSuccess }) {
 
         {/* Logo and Header Header */}
         <div className="flex flex-col items-center">
-          <Logo className="w-12 h-12" />
+          <img src={logoImage} alt="Clinic Logo" className="w-12 h-12 object-contain rounded-lg" />
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
             Nurse Dashboard
           </h2>
@@ -133,24 +144,6 @@ export default function Login({ onLoginSuccess }) {
                 </p>
               )}
             </div>
-          </div>
-
-          <div className="flex items-center justify-between text-xs sm:text-sm">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                defaultChecked
-                className="h-4 w-4 text-sky-600 focus:ring-sky-500 border-gray-300 rounded-lg cursor-pointer"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-gray-600 cursor-pointer">
-                Remember credentials
-              </label>
-            </div>
-            <span className="text-sky-600 hover:text-sky-500 font-medium cursor-pointer">
-              Forgot password?
-            </span>
           </div>
 
           {/* Submit Button */}

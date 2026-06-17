@@ -1,11 +1,26 @@
 import React, { useState } from 'react';
-import Logo from './Logo';
-import { LayoutDashboard, Users, LogOut, Menu, X } from 'lucide-react';
+import logoImage from '../assets/photo_2026-06-17_08-23-26.jpg';
+import { LayoutDashboard, Users, LogOut, Menu, X, LucideIcon } from 'lucide-react';
+import { User } from '../types';
 
-export default function DashboardLayout({ user, currentPage, setCurrentPage, onLogout, children }) {
+interface DashboardLayoutProps {
+  user: User | null;
+  currentPage: string;
+  setCurrentPage: (page: string) => void;
+  onLogout: () => void;
+  children: React.ReactNode;
+}
+
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+export default function DashboardLayout({ user, currentPage, setCurrentPage, onLogout, children }: DashboardLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'nurses', label: 'Nurses', icon: Users },
   ];
@@ -25,7 +40,7 @@ export default function DashboardLayout({ user, currentPage, setCurrentPage, onL
           </button>
           
           <div className="flex items-center gap-2.5">
-            <Logo className="w-7 h-7" />
+            <img src={logoImage} alt="Clinic Logo" className="w-7 h-7 object-contain rounded-lg" />
             <span className="font-bold text-lg text-gray-900 tracking-tight">Nurse Dashboard</span>
           </div>
         </div>

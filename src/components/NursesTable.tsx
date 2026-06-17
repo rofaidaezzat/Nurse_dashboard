@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import { Eye, Edit2, Trash2, Search, Plus } from 'lucide-react';
+import { Nurse } from '../types';
 
-export default function NursesTable({ nurses = [], onView, onEdit, onDelete, setCurrentPage, onAddClick }) {
+interface NursesTableProps {
+  nurses?: Nurse[];
+  onView: (nurse: Nurse) => void;
+  onEdit: (nurse: Nurse) => void;
+  onDelete: (nurse: Nurse) => void;
+  setCurrentPage: (page: string) => void;
+  onAddClick: () => void;
+}
+
+export default function NursesTable({ nurses = [], onView, onEdit, onDelete, setCurrentPage, onAddClick }: NursesTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filtering

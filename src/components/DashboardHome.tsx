@@ -1,7 +1,14 @@
 import React from 'react';
 import { Users, CalendarDays, UserCheck, UserPlus, Inbox } from 'lucide-react';
+import { Nurse } from '../types';
 
-export default function DashboardHome({ nurses = [], setCurrentPage, onAddClick }) {
+interface DashboardHomeProps {
+  nurses?: Nurse[];
+  setCurrentPage: (page: string) => void;
+  onAddClick: () => void;
+}
+
+export default function DashboardHome({ nurses = [], setCurrentPage, onAddClick }: DashboardHomeProps) {
   // Calculations
   const totalNurses = nurses.length;
 
@@ -13,7 +20,7 @@ export default function DashboardHome({ nurses = [], setCurrentPage, onAddClick 
   }).length;
 
   const latestNurse = nurses.length > 0 
-    ? [...nurses].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0]
+    ? [...nurses].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
     : null;
 
   return (
