@@ -5,11 +5,21 @@ import DashboardHome from './components/DashboardHome';
 import NursesTable from './components/NursesTable';
 import ToastContainer from './components/Toast';
 import { ViewModal, EditModal, DeleteModal, AddModal } from './components/Modals';
-import { User, Nurse, Toast, StaffRole } from './types';
+import { User, Nurse, Toast, StaffRole, NurseSaveData } from './types';
+import { getCookie, eraseCookie } from './utils/cookieUtils';
+import {
+  getMeAPI,
+  getAllStaffAPI,
+  createStaffAPI,
+  updateStaffAPI,
+  deleteStaffAPI,
+  mapBackendToFrontend,
+} from './services/apiService';
 import nurseAvatar1 from './assets/nurse_avatar_1.png';
 import nurseAvatar2 from './assets/nurse_avatar_2.png';
 import nurseAvatar3 from './assets/nurse_avatar_3.png';
 import nurseAvatar4 from './assets/nurse_avatar_4.png';
+
 
 const DEFAULT_NURSES: Nurse[] = [
   // ─── Registered Nurses (5) ───────────────────────────────
@@ -263,22 +273,10 @@ const generateUUID = () => {
 
 export default function App() {
   // Global States
-  const [auth, setAuth] = useState<User | null>(() => {
-    const stored = localStorage.getItem('nurse_dashboard_auth');
-    return stored ? JSON.parse(stored) : null;
-  });
-
+  const [auth, setAuth] = useState<User | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(!!getCookie('auth_token'));
   const [page, setPage] = useState('dashboard');
-  
-  const [nurses, setNurses] = useState<Nurse[]>(() => {
-    const stored = localStorage.getItem('nurse_dashboard_nurses_v4');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (parsed.length > 0) return parsed;
-    }
-    return DEFAULT_NURSES;
-  });
-
+  const [nurses, setNurses] = useState<Nurse[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
   
   // Modals focus targets
@@ -288,10 +286,53 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addRole, setAddRole] = useState<StaffRole>('registered_nurse');
 
-  // Sync nurses database with LocalStorage
+  // Fetch staff list from backend API
+  const fetchStaff = async () => {
+    try {
+      const staffList = await getAllStaffAPI();
+      const mapped = staffList.map(mapBackendToFrontend);
+      setNurses(mapped);
+    } catch (err: any) {
+      addToast('Error fetching staff list', 'error', err.message);
+    }
+  };
+
+  // Verify auth session on load
   useEffect(() => {
-    localStorage.setItem('nurse_dashboard_nurses_v4', JSON.stringify(nurses));
-  }, [nurses]);
+    const verifySession = async () => {
+      const token = getCookie('auth_token');
+      if (token) {
+        try {
+          const res = await getMeAPI();
+          if (res.success && res.data) {
+            setAuth({
+              email: res.data.email,
+              name: res.data.name,
+            });
+          } else {
+            eraseCookie('auth_token');
+            setAuth(null);
+          }
+        } catch (err) {
+          console.error('Session verification failed:', err);
+          eraseCookie('auth_token');
+          setAuth(null);
+        }
+      }
+      setIsAuthLoading(false);
+    };
+
+    verifySession();
+  }, []);
+
+  // Fetch staff list when authenticated
+  useEffect(() => {
+    if (auth) {
+      fetchStaff();
+    } else {
+      setNurses([]);
+    }
+  }, [auth]);
 
   // Toast controls
   const addToast = (
@@ -309,13 +350,12 @@ export default function App() {
 
   // Auth Operations
   const handleLogin = (userData: User) => {
-    localStorage.setItem('nurse_dashboard_auth', JSON.stringify(userData));
     setAuth(userData);
     addToast('Welcome back!', 'success', `Signed in as ${userData.email}`);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('nurse_dashboard_auth');
+    eraseCookie('auth_token');
     setAuth(null);
     setPage('dashboard');
     addToast('Signed out successfully', 'info');
@@ -331,33 +371,118 @@ export default function App() {
   };
 
   // CRUD Operations
-  const handleAddNurse = (newNurseData: Omit<Nurse, 'id' | 'createdAt'>) => {
-    const newNurse: Nurse = {
-      id: generateUUID(),
-      ...newNurseData,
-      createdAt: new Date().toISOString()
-    };
-    
-    setNurses((prev) => [newNurse, ...prev]);
-    setIsAddModalOpen(false); // Close the modal
-    setPage(newNurseData.role); // Redirect to directory of the added role
-    addToast('Profile saved!', 'success', `${newNurseData.name} has been added to the ${getRoleLabel(newNurseData.role)} registry.`);
+  const handleAddNurse = async (newNurseData: NurseSaveData) => {
+    try {
+      const formData = new FormData();
+      formData.append('name', newNurseData.name);
+      formData.append('age', String(newNurseData.age));
+      formData.append('role', newNurseData.role);
+      formData.append('idNumber', newNurseData.copyId);
+
+      if (newNurseData.profileImageFile) {
+        formData.append('profileImage', newNurseData.profileImageFile);
+      }
+      if (newNurseData.passportCertFile) {
+        formData.append('copyPassport', newNurseData.passportCertFile);
+      }
+      if (newNurseData.emiratesIdCertFile) {
+        formData.append('emiratesId', newNurseData.emiratesIdCertFile);
+      }
+      if (newNurseData.blsCertFile) {
+        formData.append('blsCertificate', newNurseData.blsCertFile);
+      }
+      if (newNurseData.vaccinationCertFile) {
+        formData.append('vaccination', newNurseData.vaccinationCertFile);
+      }
+      if (newNurseData.aclsCertFile) {
+        formData.append('aclsCertificate', newNurseData.aclsCertFile);
+      }
+      if (newNurseData.infectionControlCertFile) {
+        formData.append('infectionControlCertificate', newNurseData.infectionControlCertFile);
+      }
+
+      await createStaffAPI(formData);
+      setIsAddModalOpen(false); // Close the modal
+      setPage(newNurseData.role); // Redirect to directory of the added role
+      addToast('Profile saved!', 'success', `${newNurseData.name} has been added to the database.`);
+      
+      // Refresh staff list
+      await fetchStaff();
+    } catch (err: any) {
+      addToast('Failed to save profile', 'error', err.message);
+    }
   };
 
-  const handleEditNurse = (updatedNurseData: Omit<Nurse, 'id' | 'createdAt'>) => {
+  const handleEditNurse = async (updatedNurseData: NurseSaveData) => {
     if (!editingNurse) return;
-    setNurses((prev) => prev.map(n => n.id === editingNurse.id ? { ...n, ...updatedNurseData } : n));
-    setEditingNurse(null); // Close modal
-    addToast('Profile saved!', 'success', `Profile details for ${updatedNurseData.name} updated.`);
+    try {
+      const formData = new FormData();
+      formData.append('name', updatedNurseData.name);
+      formData.append('age', String(updatedNurseData.age));
+      formData.append('role', updatedNurseData.role);
+      formData.append('idNumber', updatedNurseData.copyId);
+
+      if (updatedNurseData.profileImageFile) {
+        formData.append('profileImage', updatedNurseData.profileImageFile);
+      }
+      if (updatedNurseData.passportCertFile) {
+        formData.append('copyPassport', updatedNurseData.passportCertFile);
+      }
+      if (updatedNurseData.emiratesIdCertFile) {
+        formData.append('emiratesId', updatedNurseData.emiratesIdCertFile);
+      }
+      if (updatedNurseData.blsCertFile) {
+        formData.append('blsCertificate', updatedNurseData.blsCertFile);
+      }
+      if (updatedNurseData.vaccinationCertFile) {
+        formData.append('vaccination', updatedNurseData.vaccinationCertFile);
+      }
+      if (updatedNurseData.aclsCertFile) {
+        formData.append('aclsCertificate', updatedNurseData.aclsCertFile);
+      }
+      if (updatedNurseData.infectionControlCertFile) {
+        formData.append('infectionControlCertificate', updatedNurseData.infectionControlCertFile);
+      }
+
+      await updateStaffAPI(editingNurse.id, formData);
+      setEditingNurse(null); // Close modal
+      addToast('Profile saved!', 'success', `Profile details for ${updatedNurseData.name} updated.`);
+      
+      // Refresh staff list
+      await fetchStaff();
+    } catch (err: any) {
+      addToast('Failed to update profile', 'error', err.message);
+    }
   };
 
-  const handleDeleteNurse = () => {
+  const handleDeleteNurse = async () => {
     if (!deletingNurse) return;
-    
-    setNurses((prev) => prev.filter(n => n.id !== deletingNurse.id));
-    addToast('Profile deleted!', 'success', `${deletingNurse.name} has been removed from the registry.`);
-    setDeletingNurse(null); // Close modal
+    try {
+      await deleteStaffAPI(deletingNurse.id);
+      addToast('Profile deleted!', 'success', `${deletingNurse.name} has been removed from the database.`);
+      setDeletingNurse(null); // Close modal
+      
+      // Refresh staff list
+      await fetchStaff();
+    } catch (err: any) {
+      addToast('Failed to delete profile', 'error', err.message);
+    }
   };
+
+  // Render loading screen while validating cookie token session
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-50 via-white to-blue-50">
+        <div className="flex flex-col items-center gap-4">
+          <svg className="animate-spin h-10 w-10 text-sky-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span className="text-sm font-semibold text-gray-500">Checking credentials...</span>
+        </div>
+      </div>
+    );
+  }
 
   // Render auth state if unauthenticated
   if (!auth) {

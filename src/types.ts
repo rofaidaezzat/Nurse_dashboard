@@ -37,3 +37,28 @@ export interface User {
   email: string;
   name: string;
 }
+
+export interface NurseSaveData {
+  role: StaffRole;
+  name: string;
+  age: number;
+  copyId: string;
+  
+  profileImageFile?: File | null;
+  aclsCertFile?: File | null;
+  blsCertFile?: File | null;
+  vaccinationCertFile?: File | null;
+  infectionControlCertFile?: File | null;
+  passportCertFile?: File | null;
+  emiratesIdCertFile?: File | null;
+  
+  profileImageBase64?: string;
+  profileImageName?: string;
+  aclsCertName?: string;
+  blsCertName?: string;
+  vaccinationCertName?: string;
+  infectionControlCertName?: string;
+  passportCertName?: string;
+  emiratesIdCertName?: string;
+}
+

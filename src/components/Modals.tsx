@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { X, FileText, Calendar, ShieldCheck, CreditCard, AlertTriangle, FileUp } from 'lucide-react';
 import NurseForm from './NurseForm';
-import { Nurse, StaffRole } from '../types';
+import { Nurse, StaffRole, NurseSaveData } from '../types';
 
 interface ModalWrapperProps {
   isOpen: boolean;
@@ -104,7 +104,10 @@ export function ViewModal({ isOpen, onClose, nurse }: ViewModalProps) {
   };
 
   // Helper to render document item row
-  const renderDocItem = (label: string, fileName?: string) => {
+  const renderDocItem = (label: string, fileVal?: string) => {
+    const isUrl = fileVal && (fileVal.startsWith('http://') || fileVal.startsWith('https://') || fileVal.startsWith('data:'));
+    const displayVal = fileVal ? (isUrl ? fileVal.split('/').pop() : fileVal) : 'Not Uploaded';
+
     return (
       <div className="flex items-center gap-3 p-3 bg-white border border-gray-150 rounded-xl">
         <div className="p-2 bg-sky-50 text-sky-500 rounded-lg">
@@ -112,7 +115,18 @@ export function ViewModal({ isOpen, onClose, nurse }: ViewModalProps) {
         </div>
         <div className="flex-grow min-w-0">
           <p className="text-xs font-semibold text-gray-800">{label}</p>
-          <p className="text-[10px] text-gray-400 truncate">{fileName || 'Not Uploaded'}</p>
+          {isUrl ? (
+            <a 
+              href={fileVal} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-[10px] text-sky-600 hover:text-sky-800 font-semibold underline truncate block transition-colors"
+            >
+              {displayVal || 'View Document'}
+            </a>
+          ) : (
+            <p className="text-[10px] text-gray-400 truncate">{displayVal}</p>
+          )}
         </div>
       </div>
     );
@@ -219,7 +233,7 @@ interface EditModalProps {
   isOpen: boolean;
   onClose: () => void;
   nurse: Nurse | null;
-  onSave: (updatedNurse: Omit<Nurse, 'id' | 'createdAt'>) => void;
+  onSave: (updatedNurse: NurseSaveData) => void;
 }
 
 /**
@@ -297,7 +311,7 @@ interface AddModalProps {
   isOpen: boolean;
   role: StaffRole;
   onClose: () => void;
-  onSave: (newNurse: Omit<Nurse, 'id' | 'createdAt'>) => void;
+  onSave: (newNurse: NurseSaveData) => void;
 }
 
 /**

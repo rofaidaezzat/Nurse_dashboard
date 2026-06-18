@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import logoImage from '../assets/photo_2026-06-17_08-23-26.jpg';
 import { User } from '../types';
+import { loginAPI } from '../services/apiService';
+import { setCookie } from '../utils/cookieUtils';
 
 interface LoginProps {
   onLoginSuccess: (user: User) => void;
@@ -36,23 +38,33 @@ export default function Login({ onLoginSuccess }: LoginProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
     setIsSubmitting(true);
-    
-    // Simulate brief network latency for premium feel
-    setTimeout(() => {
-      if (email === 'admin@clinic.com' && password === 'admin123') {
-        onLoginSuccess({ email, name: 'Clinic Admin' });
+    try {
+      const result = await loginAPI(email, password);
+      if (result.success && result.token) {
+        // Store the token in cookies
+        setCookie('auth_token', result.token, 7);
+        
+        onLoginSuccess({
+          email: result.data.email,
+          name: result.data.name,
+        });
       } else {
         setErrors({
-          form: 'Invalid email or password. Please try again.'
+          form: result.message || 'Invalid email or password. Please try again.'
         });
       }
+    } catch (err: any) {
+      setErrors({
+        form: err.message || 'Unable to connect to the authentication server. Please check if the server is running.'
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 800);
+    }
   };
 
   return (
@@ -165,12 +177,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
           </div>
         </form>
 
-        {/* Demo Credentials Helper Card */}
-        <div className="mt-6 pt-5 border-t border-gray-100 text-center">
-          <div className="inline-block px-3 py-1.5 rounded-lg bg-sky-50 text-[11px] sm:text-xs text-sky-700 font-medium leading-relaxed">
-            <span className="font-bold">Demo:</span> admin@clinic.com / admin123
-          </div>
-        </div>
+       
 
       </div>
     </div>

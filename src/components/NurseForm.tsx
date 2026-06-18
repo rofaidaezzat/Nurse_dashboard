@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Upload, X, FileText, Image as ImageIcon, RotateCcw, Save } from 'lucide-react';
-import { Nurse, StaffRole } from '../types';
+import { Nurse, StaffRole, NurseSaveData } from '../types';
 
 interface NurseFormProps {
   initialData?: Nurse | null;
   role?: StaffRole;
-  onSave: (record: Omit<Nurse, 'id' | 'createdAt'>) => void;
+  onSave: (record: NurseSaveData) => void;
   onCancel?: (() => void) | null;
   submitButtonLabel?: string;
 }
@@ -47,6 +47,15 @@ export default function NurseForm({
   const [infectionControlCertName, setInfectionControlCertName] = useState('');
   const [passportCertName, setPassportCertName] = useState('');
   const [emiratesIdCertName, setEmiratesIdCertName] = useState('');
+
+  // Raw file objects for upload
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [aclsCertFile, setAclsCertFile] = useState<File | null>(null);
+  const [blsCertFile, setBlsCertFile] = useState<File | null>(null);
+  const [vaccinationCertFile, setVaccinationCertFile] = useState<File | null>(null);
+  const [infectionControlCertFile, setInfectionControlCertFile] = useState<File | null>(null);
+  const [passportCertFile, setPassportCertFile] = useState<File | null>(null);
+  const [emiratesIdCertFile, setEmiratesIdCertFile] = useState<File | null>(null);
   
   // Validation errors
   const [errors, setErrors] = useState<FormErrors>({});
@@ -92,6 +101,7 @@ export default function NurseForm({
       reader.onloadend = () => {
         setProfileImageBase64(reader.result as string);
         setProfileImageName(file.name);
+        setProfileImageFile(file);
         setErrors(prev => ({ ...prev, profileImage: null }));
       };
       reader.readAsDataURL(file);
@@ -107,6 +117,14 @@ export default function NurseForm({
     if (file) {
       setFileName(file.name);
       setErrors(prev => ({ ...prev, [fieldKey]: null }));
+      
+      // Keep track of the raw file
+      if (fieldKey === 'passportCert') setPassportCertFile(file);
+      else if (fieldKey === 'emiratesIdCert') setEmiratesIdCertFile(file);
+      else if (fieldKey === 'blsCert') setBlsCertFile(file);
+      else if (fieldKey === 'vaccinationCert') setVaccinationCertFile(file);
+      else if (fieldKey === 'aclsCert') setAclsCertFile(file);
+      else if (fieldKey === 'infectionControlCert') setInfectionControlCertFile(file);
     }
   };
 
@@ -137,6 +155,15 @@ export default function NurseForm({
       setPassportCertName('');
       setEmiratesIdCertName('');
     }
+
+    // Reset raw file objects
+    setProfileImageFile(null);
+    setAclsCertFile(null);
+    setBlsCertFile(null);
+    setVaccinationCertFile(null);
+    setInfectionControlCertFile(null);
+    setPassportCertFile(null);
+    setEmiratesIdCertFile(null);
     
     // Clear actual input file values
     if (profileInputRef.current) profileInputRef.current.value = '';
@@ -192,15 +219,24 @@ export default function NurseForm({
 
     const isAssistant = activeRole === 'assistant_nurse';
 
-    const record = {
+    const record: NurseSaveData = {
       role: activeRole,
       name: name.trim(),
       age: parseInt(age, 10),
       copyId: copyId.trim(),
+      
+      // Raw files
+      profileImageFile,
+      aclsCertFile: isAssistant ? null : aclsCertFile,
+      blsCertFile,
+      vaccinationCertFile,
+      infectionControlCertFile: isAssistant ? null : infectionControlCertFile,
+      passportCertFile,
+      emiratesIdCertFile,
+      
+      // Existing metadata (or base64/URLs)
       profileImageBase64,
       profileImageName,
-      dhaNumber: '',
-      nationalId: '',
       aclsCertName: isAssistant ? '' : aclsCertName,
       blsCertName,
       vaccinationCertName,
@@ -313,6 +349,7 @@ export default function NurseForm({
                     onClick={() => {
                       setProfileImageBase64('');
                       setProfileImageName('');
+                      setProfileImageFile(null);
                       if (profileInputRef.current) profileInputRef.current.value = '';
                     }}
                     className="absolute top-1 right-1 p-0.5 bg-black/60 rounded-lg text-white hover:bg-black/80 transition-colors"
@@ -378,6 +415,7 @@ export default function NurseForm({
                     type="button"
                     onClick={() => {
                       setPassportCertName('');
+                      setPassportCertFile(null);
                       if (passportInputRef.current) passportInputRef.current.value = '';
                     }}
                     className="p-0.5 hover:bg-sky-100 rounded-lg text-sky-600 transition-colors"
@@ -419,6 +457,7 @@ export default function NurseForm({
                     type="button"
                     onClick={() => {
                       setEmiratesIdCertName('');
+                      setEmiratesIdCertFile(null);
                       if (emiratesIdInputRef.current) emiratesIdInputRef.current.value = '';
                     }}
                     className="p-0.5 hover:bg-sky-100 rounded-lg text-sky-600 transition-colors"
@@ -460,6 +499,7 @@ export default function NurseForm({
                     type="button"
                     onClick={() => {
                       setBlsCertName('');
+                      setBlsCertFile(null);
                       if (blsInputRef.current) blsInputRef.current.value = '';
                     }}
                     className="p-0.5 hover:bg-sky-100 rounded-lg text-sky-600 transition-colors"
@@ -501,6 +541,7 @@ export default function NurseForm({
                     type="button"
                     onClick={() => {
                       setVaccinationCertName('');
+                      setVaccinationCertFile(null);
                       if (vaccinationInputRef.current) vaccinationInputRef.current.value = '';
                     }}
                     className="p-0.5 hover:bg-sky-100 rounded-lg text-sky-600 transition-colors"
@@ -545,6 +586,7 @@ export default function NurseForm({
                         type="button"
                         onClick={() => {
                           setAclsCertName('');
+                          setAclsCertFile(null);
                           if (aclsInputRef.current) aclsInputRef.current.value = '';
                         }}
                         className="p-0.5 hover:bg-sky-100 rounded-lg text-sky-600 transition-colors"
@@ -586,6 +628,7 @@ export default function NurseForm({
                         type="button"
                         onClick={() => {
                           setInfectionControlCertName('');
+                          setInfectionControlCertFile(null);
                           if (infectionControlInputRef.current) infectionControlInputRef.current.value = '';
                         }}
                         className="p-0.5 hover:bg-sky-100 rounded-lg text-sky-600 transition-colors"
