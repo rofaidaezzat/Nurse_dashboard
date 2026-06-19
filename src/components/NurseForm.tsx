@@ -198,16 +198,7 @@ export default function NurseForm({
 
     if (!copyId.trim()) newErrors.copyId = 'Copy ID is required';
 
-    if (!isAssistant) {
-      if (!aclsCertName) newErrors.aclsCert = 'ACLS Certification is required';
-      if (!infectionControlCertName) newErrors.infectionControlCert = 'Infection Control Certificate is required';
-    }
-
-    // Common files required for all roles
-    if (!blsCertName) newErrors.blsCert = 'BLS Certification is required';
-    if (!vaccinationCertName) newErrors.vaccinationCert = 'Vaccination Records/Certificate is required';
-    if (!passportCertName) newErrors.passportCert = 'Copy of Passport is required';
-    if (!emiratesIdCertName) newErrors.emiratesIdCert = 'Copy of Emirates ID is required';
+    // All PDF documents are optional
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -389,7 +380,7 @@ export default function NurseForm({
           {/* Copy of Passport */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700">
-              Copy of Passport <span className="text-rose-500">*</span>
+              Copy of Passport
             </label>
             <div className="flex items-center gap-3">
               <label className="flex-grow relative flex items-center justify-center px-4 py-7 rounded-xl border border-dashed border-gray-300 bg-white hover:bg-gray-50 cursor-pointer transition-colors group">
@@ -431,7 +422,7 @@ export default function NurseForm({
           {/* Copy of Emirates ID */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700">
-              Copy of Emirates ID <span className="text-rose-500">*</span>
+              Copy of Emirates ID
             </label>
             <div className="flex items-center gap-3">
               <label className="flex-grow relative flex items-center justify-center px-4 py-7 rounded-xl border border-dashed border-gray-300 bg-white hover:bg-gray-50 cursor-pointer transition-colors group">
@@ -473,7 +464,7 @@ export default function NurseForm({
           {/* BLS Certificate */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700">
-              BLS Certificate <span className="text-rose-500">*</span>
+              BLS Certificate
             </label>
             <div className="flex items-center gap-3">
               <label className="flex-grow relative flex items-center justify-center px-4 py-7 rounded-xl border border-dashed border-gray-300 bg-white hover:bg-gray-50 cursor-pointer transition-colors group">
@@ -515,7 +506,7 @@ export default function NurseForm({
           {/* Vaccination Records */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700">
-              {isAssistant ? 'Vaccination Records' : 'Vaccination Certificate'} <span className="text-rose-500">*</span>
+              {isAssistant ? 'Vaccination Records' : 'Vaccination Certificate'}
             </label>
             <div className="flex items-center gap-3">
               <label className="flex-grow relative flex items-center justify-center px-4 py-7 rounded-xl border border-dashed border-gray-300 bg-white hover:bg-gray-50 cursor-pointer transition-colors group">
@@ -560,7 +551,7 @@ export default function NurseForm({
               {/* ACLS Certificate */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
-                  ACLS Certificate <span className="text-rose-500">*</span>
+                  ACLS Certificate
                 </label>
                 <div className="flex items-center gap-3">
                   <label className="flex-grow relative flex items-center justify-center px-4 py-7 rounded-xl border border-dashed border-gray-300 bg-white hover:bg-gray-50 cursor-pointer transition-colors group">
@@ -602,7 +593,7 @@ export default function NurseForm({
               {/* Infection Control Certificate */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700">
-                  Infection Control Certificate <span className="text-rose-500">*</span>
+                  Infection Control Certificate
                 </label>
                 <div className="flex items-center gap-3">
                   <label className="flex-grow relative flex items-center justify-center px-4 py-7 rounded-xl border border-dashed border-gray-300 bg-white hover:bg-gray-50 cursor-pointer transition-colors group">
